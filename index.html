@@ -167,45 +167,7 @@
         // Update the date and time every second
         setInterval(updateDateTime, 1000);
 
-        // Function to get the user's location using the Geolocation API
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        // Reverse geocoding (optional, requires a service like Google Maps API)
-                        // Here, we'll just display the coordinates for simplicity
-                        locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
-                        // You could use a service like Google Maps Geocoding API to get the city, state, and country
-                        // Example:
-                        //fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_GOOGLE_MAPS_API_KEY`)
-                        //     .then(response => response.json())
-                        //     .then(data => {
-                        //         if (data.results && data.results.length > 0) {
-                        //             const address = data.results[0].formatted_address;
-                        //             locationDisplay.textContent = address;
-                        //         } else {
-                        //             locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
-                        //         }
-                        //     })
-                        //     .catch(error => {
-                        //         console.error("Geocoding error:", error);
-                        //         locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
-                        //     });
-                    },
-                    (error) => {
-                        locationDisplay.textContent = `Error: ${error.message}`;
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 5000,
-                    }
-                );
-            } else {
-                locationDisplay.textContent = 'Geolocation is not supported by this browser.';
-            }
-        }
+     
 
         // Get the user's location when the page loads
         getLocation();
