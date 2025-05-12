@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Advocates</title>
+    <title>AI Chatbot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -74,35 +74,47 @@
     </style>
 </head>
 <body class="bg-gray-100 flex justify-center items-center min-h-screen">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
-        <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">AI Advocates</h1>
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl relative">
+        <div id="datetime" class="absolute top-2 right-4 text-sm text-gray-600"></div>
+        <div id="location" class="absolute top-2 left-4 text-sm text-gray-600">Fetching Location...</div>
+        <h1 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Muthu...</h1>
         <div class="flex flex-col">
             <div class="flex items-center mb-4">
-                <input type="text" id="promptInput" placeholder="Enter your prompt..." class="input-box" />
+                <input type="text" id="promptInput" placeholder="Answer me" class="input-box" />
                 <button id="sendButton" class="send-button">Send</button>
             </div>
             <div id="chatContainer" class="chat-container">
                 </div>
         </div>
+        <p class="text-xs text-gray-500 mt-4 text-center">வடிவமைப்பு மற்றும் செயலாக்கம் : பர்வே </p>
     </div>
 
     <script>
         const promptInput = document.getElementById('promptInput');
         const sendButton = document.getElementById('sendButton');
         const chatContainer = document.getElementById('chatContainer');
+        const datetimeDisplay = document.getElementById('datetime');
+        const locationDisplay = document.getElementById('location');
 
         // Replace with your actual Gemini API key.  Important: Keep this secure!
         const apiKey = 'AIzaSyDrbrnogDS_6OySOENEI5QvTlWIkkwQMHU';  //  <----------------------------------- INSERT YOUR API KEY HERE -----------------------------------
         const modelName = 'gemini-2.0-flash'; // Or 'gemini-pro-vision' for multimodal
 
+        // Function to add a message to the chat container
+        function addMessage(sender, messageText, messageType) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', messageType);
+            messageDiv.innerHTML = `<div class="message-content">${messageText}</div>`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to bottom
+        }
+
         async function sendMessage() {
             const prompt = promptInput.value;
             if (!prompt) return;
 
-            const userMessage = document.createElement('div');
-            userMessage.classList.add('message', 'user-message');
-            userMessage.innerHTML = `<div class="message-content">${prompt}</div>`;
-            chatContainer.appendChild(userMessage);
+            addMessage('user', prompt, 'user-message');  // Add user message
+
             promptInput.value = '';
 
             try {
@@ -125,18 +137,10 @@
                 const data = await response.json();
                 const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from the model.';
 
-                const botMessage = document.createElement('div');
-                botMessage.classList.add('message', 'bot-message');
-                botMessage.innerHTML = `<div class="message-content">${reply}</div>`;
-                chatContainer.appendChild(botMessage);
-                chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to bottom
+                addMessage('bot', reply, 'bot-message'); // Add bot message
             } catch (error) {
                 console.error('Error:', error);
-                const errorMessage = document.createElement('div');
-                errorMessage.classList.add('message', 'bot-message');
-                errorMessage.innerHTML = `<div class="message-content error">Error: ${error.message}</div>`;
-                chatContainer.appendChild(errorMessage);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+                addMessage('bot', `Error: ${error.message}`, 'bot-message');
             }
         }
 
@@ -146,9 +150,65 @@
                 sendMessage();
             }
         });
-         // Add a welcome message when the page loads
-        addMessage('bot', 'Welcome to the Gemini Chatbot! How can I help you today?', 'bot-message');
+
+        // Add a welcome message when the page loads
+        addMessage('bot', 'Welcome to the Purvey Chatbot! How can I help you today?', 'bot-message');
+
+        // Function to update the date and time
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeString = now.toLocaleString(); // Or customize as needed
+            datetimeDisplay.textContent = dateTimeString;
+        }
+
+        // Update the date and time immediately when the page loads
+        updateDateTime();
+
+        // Update the date and time every second
+        setInterval(updateDateTime, 1000);
+
+        // Function to get the user's location using the Geolocation API
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        // Reverse geocoding (optional, requires a service like Google Maps API)
+                        // Here, we'll just display the coordinates for simplicity
+                        locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
+                        // You could use a service like Google Maps Geocoding API to get the city, state, and country
+                        // Example:
+                        //fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_GOOGLE_MAPS_API_KEY`)
+                        //     .then(response => response.json())
+                        //     .then(data => {
+                        //         if (data.results && data.results.length > 0) {
+                        //             const address = data.results[0].formatted_address;
+                        //             locationDisplay.textContent = address;
+                        //         } else {
+                        //             locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
+                        //         }
+                        //     })
+                        //     .catch(error => {
+                        //         console.error("Geocoding error:", error);
+                        //         locationDisplay.textContent = `Lat: ${latitude.toFixed(4)}, Long: ${longitude.toFixed(4)}`;
+                        //     });
+                    },
+                    (error) => {
+                        locationDisplay.textContent = `Error: ${error.message}`;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 5000,
+                    }
+                );
+            } else {
+                locationDisplay.textContent = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        // Get the user's location when the page loads
+        getLocation();
     </script>
 </body>
 </html>
-
